@@ -1,0 +1,5 @@
+torch
+torchdyn
+pytorch_lightning
+streamlit
+openpyxl
