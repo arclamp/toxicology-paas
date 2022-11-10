@@ -1,9 +1,10 @@
 import json
+import numpy as np
 import pandas as pd
 import streamlit as st
+import tempfile
 import torch
 
-@st.cache(show_spinner=False)
 def load_model_from_package(path, arch_name=None, module_name=None):
     imp = torch.package.PackageImporter(path)
     # Assume this standardized header information exists that tells us the
@@ -89,16 +90,46 @@ if data_file:
         'DepMass_Pul_Cadmium',
     ]
 
-    input_df = df[inputs]
-    sample = input_df.iloc[5]
-    tensor = torch.tensor(sample.values, dtype=torch.float)
-    prediction = pd.DataFrame(model(tensor).detach().numpy(), index=outputs)
+    input_df = df.rename(columns={
+        'AeroMassPerPuff_In': 'AeroMassPerPuff',
+        'AeroMassFraction_In_Water': 'AeroMassFraction_Water',
+        'AeroMassFraction_In_Nicotine': 'AeroMassFraction_Nicotine',
+        'AeroMassFraction_In_PropGlycol': 'AeroMassFraction_PropGlycol',
+        'AeroMassFraction_In_Glycerin': 'AeroMassFraction_Glycerin',
+        'AeroMassFraction_In_Cadmium': 'AeroMassFraction_Cadmium',
+    })
 
+    # Select a sample of rows to predict.
+    rows = [5, 10, 20, 40, 60, 100]
+    sample = input_df.iloc[rows]
+    sample_out = df[outputs].iloc[rows]
+
+    # Write out input data to disk.
+    input_file = tempfile.NamedTemporaryFile(suffix='.xlsx')
+    sample.to_excel(input_file.name)
+
+    # Prepare an output file as well.
+    output_file = tempfile.NamedTemporaryFile(suffix='.xlsx')
+
+    # Run the model.
+    model.inference(input_file.name, output_file.name)
+
+    # Display the results.
     st.markdown('## Input dataframe')
     input_df
 
-    st.markdown('## Subject 5')
+    st.markdown('## Sample')
     sample
 
     st.markdown('## Predicted values for output variables')
+    prediction = pd.read_excel(output_file.name)[outputs]
+    prediction.index = rows
     prediction
+
+    st.markdown('## Ground truth values for output variables')
+    sample_out
+
+    st.markdown('## Error measurement')
+    diff = prediction - sample_out
+    residuals = pd.DataFrame((np.sqrt(np.sum(row * row)) for index, row in diff.iterrows()), index=diff.index, columns=['L2(residual)'])
+    residuals
