@@ -94,6 +94,11 @@ if data_file:
     tensor = torch.tensor(sample.values, dtype=torch.float)
     prediction = pd.DataFrame(model(tensor).detach().numpy(), index=outputs)
 
+    st.markdown('## Input dataframe')
     input_df
+
+    st.markdown('## Subject 5')
     sample
+
+    st.markdown('## Predicted values for output variables')
     prediction
