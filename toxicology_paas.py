@@ -94,7 +94,6 @@ if data_file:
     tensor = torch.tensor(sample.values, dtype=torch.float)
     prediction = pd.DataFrame(model(tensor).detach().numpy(), index=outputs)
 
-    display_container = st.container()
-    display_container.write(input_df)
-    display_container.write(sample)
-    display_container.write(prediction)
+    input_df
+    sample
+    prediction
