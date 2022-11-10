@@ -1,0 +1,7 @@
+torch
+torchdyn
+pytorch_lightning
+scikit-learn
+seaborn
+streamlit
+openpyxl
