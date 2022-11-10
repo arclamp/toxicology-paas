@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 import torch
 
+@st.cache(show_spinner=False)
 def load_model_from_package(path, arch_name=None, module_name=None):
     imp = torch.package.PackageImporter(path)
     # Assume this standardized header information exists that tells us the
