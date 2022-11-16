@@ -134,4 +134,7 @@ if data_file:
     prediction = pd.read_excel(output_file.name)[outputs]
     prediction
 
-    st.download_button('Download predictions', open(output_file.name, mode='rb'))
+    st.download_button(
+        label='Download predictions',
+        data=open(output_file.name, mode='rb'),
+        file_name='predictions.xlsx')
