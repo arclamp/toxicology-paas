@@ -44,6 +44,22 @@ def df_from_file(file) -> pd.DataFrame:
     else:
         return pd.read_excel(file)
 
+
+@st.cache(show_spinner=False)
+def prepare_data(data: pd.DataFrame):
+    with st.spinner('Preparing data...'):
+        input_file = tempfile.NamedTemporaryFile(suffix='.xlsx')
+        data.to_excel(input_file.name)
+
+    return input_file
+
+
+@st.cache(show_spinner=False)
+def run_model(model, input_file, output_file):
+    with st.spinner('Running model...'):
+        model.inference(input_file, output_file)
+
+
 upload_container = st.empty()
 data_file = upload_container.file_uploader('Upload input samples', type=['csv', 'xlsx'])
 
@@ -106,16 +122,13 @@ if data_file:
     sample = input_df
 
     # Write out input data to disk.
-    with st.spinner('Preparing input data...'):
-        input_file = tempfile.NamedTemporaryFile(suffix='.xlsx')
-        sample.to_excel(input_file.name)
+    input_file = prepare_data(sample)
 
     # Prepare an output file as well.
     output_file = tempfile.NamedTemporaryFile(suffix='.xlsx')
 
     # Run the model.
-    with st.spinner('Running model...'):
-        model.inference(input_file.name, output_file.name)
+    run_model(model, input_file.name, output_file.name)
 
     st.markdown('## Predicted outputs')
     prediction = pd.read_excel(output_file.name)[outputs]
